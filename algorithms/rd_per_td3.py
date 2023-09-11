@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-class ARTD3:
+class TD3:
     def __init__(self,
                  actor_network,
                  critic_network,
