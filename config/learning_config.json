@@ -1,0 +1,11 @@
+{
+    "seed": 571,
+    "batch_size": 32,
+    "G": 10,
+    "max_steps_exploration": 1000,
+    "max_steps_training": 1000000,
+    "actor_lr": 1e-4,
+    "critic_lr": 1e-3,
+    "gamma": 0.99,
+    "tau": 0.005
+}
