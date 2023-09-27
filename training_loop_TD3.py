@@ -27,14 +27,9 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def set_seed(env,seed):
     torch.manual_seed(seed)
-    #torch.cuda.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
     env.action_space.seed(seed)
-    #torch.backends.cudnn.deterministic = True
-    #random.Random(seed)
-    #env.observation_space.seed(seed)
-    #os.environ['PYTHONHASHSEED'] = str(seed)
 
 def plot_reward_curve(data_reward):
     data = pd.DataFrame.from_dict(data_reward)
@@ -161,21 +156,6 @@ def train(agent,env, memory, max_action_value, min_action_value, learning_config
             episode_num += 1
 
     plot_reward_curve(historical_reward)
-    # Read the data from the CSV file into a pandas DataFrame
-    """file_name = "aug_reward_per_seed_571.csv"
-    data = pd.read_csv(file_name)
-
-    # Extract the step and episode_reward columns from the DataFrame
-    steps = data["Step"]
-    rewards = data["episode_reward"]
-
-    # Create the plot
-    plt.plot(steps, rewards)
-    plt.xlabel("Step")
-    plt.ylabel("Episode Reward")
-    plt.title("Reward per Step")
-    plt.grid(True)
-    plt.show()"""
 
 def main():
     learning_config = pydantic.parse_file_as(path="config/learning_config.json", type_=LearningConfig)
