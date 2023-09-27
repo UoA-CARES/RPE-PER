@@ -162,7 +162,7 @@ def main():
 
     start_time = time.time()
     env = gym.make(
-        'Walker2d-v4')  # Mujoco: 'HalfCheetah-v4', Humanoid-v4, Swimmer-v4, Ant-v4, InvertedPendulum-v4, Walker2d-v4, "Hopper-v4"
+        'HalfCheetah-v4')  # Mujoco: 'HalfCheetah-v4', Humanoid-v4, Swimmer-v4, Ant-v4, InvertedPendulum-v4, Walker2d-v4, "Hopper-v4"
     # Pendulum-v1, BipedalWalker-v3
     observation_size = env.observation_space.shape[0]
     action_num = env.action_space.shape[0]
