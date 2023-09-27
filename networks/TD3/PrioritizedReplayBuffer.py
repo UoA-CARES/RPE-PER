@@ -14,7 +14,6 @@ class PrioritizedReplayBuffer():
         self.action = np.zeros((max_size, action_dim))
         self.next_state = np.zeros((max_size, state_dim))
         self.reward = np.zeros((max_size, 1))
-        # self.not_done = np.zeros((max_size, 1))
         self.done = np.zeros((max_size, 1))
 
         self.tree = SumTree(max_size)
@@ -29,7 +28,6 @@ class PrioritizedReplayBuffer():
         self.action[self.ptr] = action
         self.next_state[self.ptr] = next_state
         self.reward[self.ptr] = reward
-        # self.not_done[self.ptr] = 1. - done
         self.done[self.ptr] = done
 
         self.tree.set(self.ptr, self.max_priority)
@@ -42,8 +40,7 @@ class PrioritizedReplayBuffer():
         weights = self.tree.levels[-1][ind] ** -self.beta
         weights /= weights.max()
 
-        self.beta = min(self.beta + 2e-7,
-                        1)  # Hardcoded: 0.4 + 2e-7 * 3e6 = 1.0. Only used by PER. gradually increasing beta
+        self.beta = min(self.beta + 2e-7, 1)
 
         # return (self.state[ind], self.action[ind], self.reward[ind], self.next_state[ind], self.done[ind], ind, weights)
 
@@ -59,9 +56,5 @@ class PrioritizedReplayBuffer():
         )
 
     def update_priority(self, ind, priority):
-        #q = priority[0, :]
-        #s = priority[1, :]
-        #priority = s
-        #priority = priority + self.epsilon_d
         self.max_priority = max(priority.max(), self.max_priority)
         self.tree.batch_set(ind, priority)
