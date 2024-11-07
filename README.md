@@ -1,10 +1,10 @@
 # Reward-Driven Prioritised Experience Replay 
-The following repository contains the PyTorch implementation of *Reward-Driven Prioritised Experience Replay* (RD-PER). It is integrated into two off-policy  RL algorithms: TD3 and SAC. 
+The following repository contains the PyTorch implementation of *Reward Prediction Error Prioritisation Experience Replay* (RPE-PER). It is integrated into two off-policy  RL algorithms: TD3 and SAC. 
 
 The algorithm is tested on [MuJoCo](https://www.gymlibrary.dev/environments/mujoco/index.html) continuous control suite. 
 
 ## Network Architecture 
-![architecture](readme_media/RD-PER.png)
+![architecture](readme_media/RPE-PER.png)
 
 ## Instructions 
 ### Prerequisite Versions

@@ -170,7 +170,6 @@ def main():
     max_action_value = env.action_space.high[0]
     min_action_value = env.action_space.low[0]
 
-    # (1)memory = MemoryBuffer()
     set_seed(env, learning_config.seed)
     memory = PrioritizedReplayBuffer(observation_size, action_num)
     actor = Actor(observation_size, action_num, learning_config.actor_lr)
