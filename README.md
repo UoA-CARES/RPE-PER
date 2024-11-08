@@ -1,4 +1,4 @@
-# Reward Prediction Error Prioritised Experience Replay 
+# Reward Prediction Error Prioritised Experience Replay (RPE-PER)
 The following repository contains the PyTorch implementation of *Reward Prediction Error Prioritisation Experience Replay* (RPE-PER). It is integrated into two off-policy  RL algorithms: TD3 and SAC. 
 
 The algorithm is tested on [MuJoCo](https://www.gymlibrary.dev/environments/mujoco/index.html) continuous control suite. 
