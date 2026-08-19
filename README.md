@@ -1,116 +1,90 @@
 # Reward Prediction Error Prioritised Experience Replay (RPE-PER)
 
-> **We learn more when reality differs from what we expected.**  
-> RPE-PER brings this biological learning principle into experience replay.
+> **Unexpected outcomes drive learning. RPE-PER uses this principle to decide which experiences should be replayed more often.**
 
-**Reward Prediction Error Prioritised Experience Replay (RPE-PER)** is an experience replay strategy for off-policy reinforcement learning that prioritises transitions according to discrepancies between **predicted and observed rewards**.
+**Reward Prediction Error Prioritised Experience Replay (RPE-PER)** is a biologically motivated experience replay strategy for off-policy reinforcement learning. It prioritises transitions according to the discrepancy between **predicted and observed rewards**, allowing the agent to revisit experiences whose outcomes are not yet well predicted.
 
-Instead of relying solely on value-based errors to determine which experiences should be replayed, RPE-PER asks a more direct question:
-
-> **How different was the received reward from what the agent expected?**
-
-The method is implemented in **PyTorch**, integrated with **TD3** and **SAC**, and evaluated on continuous-control tasks from the [MuJoCo](https://www.gymlibrary.dev/environments/mujoco/index.html) benchmark suite.
+RPE-PER is implemented in **PyTorch**, integrated with **TD3** and **SAC**, and evaluated on continuous-control tasks from the [MuJoCo](https://www.gymlibrary.dev/environments/mujoco/index.html) benchmark suite.
 
 **Paper:** [Reward Prediction Error Prioritisation in Experience Replay: The RPE-PER Method](https://arxiv.org/abs/2501.18093)  
 **Presented at:** Australasian Conference on Robotics and Automation (**ACRA 2024**)
 
 ---
 
-## Biological Motivation: Learning from Violated Expectations
+## Biological Motivation
 
 Learning is strongly influenced by the difference between **what we expect** and **what actually happens**.
 
-Consider visiting a familiar restaurant. Based on previous experiences, you already have an expectation of how rewarding the meal will be.
+Consider visiting a familiar restaurant. Based on previous experiences, you already have an expectation of how rewarding the meal will be. If the experience is exactly as expected, there may be little reason to substantially revise that expectation. But if the outcome is **far better or far worse than expected**, the discrepancy can produce a stronger learning signal and have a greater influence on future decisions.
 
-If the meal is exactly as expected, there may be little reason to substantially revise that expectation. In contrast, if the experience is **far better or far worse than expected**, the discrepancy provides a stronger signal for updating what has been learned and can have a greater influence on future decisions.
-
-This discrepancy between **expected** and **received** reward is known as **Reward Prediction Error (RPE)**.
+This difference between **expected reward** and **received reward** is known as **Reward Prediction Error (RPE)**.
 
 <p align="center">
   <img src="readme_media/RPE.png" width="850" alt="Reward Prediction Error in biological learning">
 </p>
 
-Conceptually, signed reward prediction error can be written as
+Conceptually, the signed reward prediction error can be written as
 
-$$
+```math
 \delta_t^{(r)} = r_t - \hat{r}_t
-$$
+```
 
 where $r_t$ is the reward actually received and $\hat{r}_t$ is the expected reward.
 
-The three principal cases are:
-
 - **Positive RPE:** the outcome is better than expected.
-- **Near-zero RPE:** the outcome closely matches expectation.
+- **Near-zero RPE:** the outcome matches expectation.
 - **Negative RPE:** the outcome is worse than expected.
 
-The central intuition is simple:
+The key intuition is:
 
 > **The greater the violation of expectation, the stronger the potential learning signal.**
 
-RPE-PER transfers this idea to reinforcement learning by using reward-prediction discrepancies to determine **which stored experiences should be replayed more frequently**.
+RPE-PER transfers this principle to experience replay by prioritising transitions whose rewards differ most from what the agent predicted.
 
 ---
 
 ## From Reward Surprise to Experience Replay
 
-Off-policy reinforcement-learning agents store past interactions in a replay buffer as transitions
+Off-policy reinforcement-learning agents store interactions in a replay buffer as transitions
 
-$$
+```math
 x_i = (s_i, a_i, r_i, s'_i)
-$$
+```
 
-where:
+where $s_i$ is the current state, $a_i$ is the selected action, $r_i$ is the observed reward, and $s'_i$ is the resulting next state.
 
-- $s_i$ is the current state,
-- $a_i$ is the selected action,
-- $r_i$ is the observed reward,
-- $s'_i$ is the resulting next state.
+Standard **Experience Replay** samples stored transitions uniformly. However, not every experience is equally informative.
 
-During training, a replay buffer can accumulate a large number of transitions. However, **not every stored experience is equally informative**.
+**Prioritised Experience Replay (PER)** addresses this by increasing the probability of replaying transitions with large temporal-difference (TD) errors.
 
-Standard **Experience Replay** samples transitions uniformly. **Prioritised Experience Replay (PER)** instead increases the probability of replaying transitions with large temporal-difference (TD) errors.
+TD error measures a discrepancy between a value estimate and its bootstrapped target. Although useful, it depends on value-function estimation and can be influenced by bootstrapping, function approximation, and changes in the learned policy.
 
-TD error measures the discrepancy between a value estimate and its bootstrapped target. Although useful, it depends on value-function estimation and can be influenced by function approximation, bootstrapping, and changes in the learned policy.
+RPE-PER takes a different perspective and focuses directly on the observed reward outcome:
 
-RPE-PER takes a different perspective.
+> **How different was the received reward from the reward the agent predicted?**
 
-Instead of asking:
-
-> **How wrong was the estimated value of this transition?**
-
-RPE-PER asks:
-
-> **How different was the observed reward from the reward predicted for this experience?**
-
-This provides a direct and interpretable signal of how poorly the reward outcome is currently predicted.
+This provides a direct and interpretable signal for identifying experiences whose outcomes are still poorly predicted.
 
 ---
 
 ## RPE-PER
 
-For each stored transition
+For each stored transition, the critic predicts the immediate reward associated with the state-action pair:
 
-$$
-x_i = (s_i, a_i, r_i, s'_i)
-$$
-
-the critic predicts the immediate reward associated with the state-action pair:
-
-$$
+```math
 \hat{r}_i = R_{\theta}(s_i,a_i)
-$$
+```
 
 where $R_{\theta}(s_i,a_i)$ is the predicted immediate reward.
 
 RPE-PER defines the reward prediction error used for prioritisation as
 
-$$
+```math
 \mathrm{RPE}_i =
 \left(
 R_{\theta}(s_i,a_i) - r_i
 \right)^2
-$$
+```
 
 This is the **squared discrepancy between predicted and observed reward**.
 
@@ -143,53 +117,52 @@ Observed reward ≠ Predicted reward
       Higher replay priority
               │
               ▼
-       Replay more often
+        Replay more often
 ```
-
-The principle behind RPE-PER is therefore:
 
 > **Experiences whose rewards violate the agent's expectations more strongly receive greater replay priority.**
 
 ---
 
-## Prioritised Sampling with RPE
+## Prioritised Sampling
 
 For each transition, replay priority is defined as
 
-$$
+```math
 \sigma_i = \mathrm{RPE}_i + \epsilon
-$$
+```
 
-where $\epsilon > 0$ ensures that all transitions retain a non-zero probability of being sampled.
+where $\epsilon > 0$ ensures that every transition remains sampleable.
 
 The probability of sampling transition $i$ is
 
-$$
+```math
 p_i =
 \frac{\sigma_i^{\alpha}}
 {\sum_j \sigma_j^{\alpha}}
-$$
+```
 
-where $\alpha \geq 0$ controls the degree of prioritisation.
+where $\alpha \geq 0$ controls the strength of prioritisation.
 
-When $\alpha = 0$, all transitions have equal sampling probability. Increasing $\alpha$ places progressively greater emphasis on transitions with larger RPE values.
+- $\alpha = 0$ corresponds to uniform sampling.
+- Larger $\alpha$ places greater emphasis on transitions with high RPE.
 
-Because non-uniform sampling changes the training distribution, importance-sampling weights are applied:
+To compensate for the bias introduced by non-uniform sampling, importance-sampling weights are applied:
 
-$$
+```math
 w_i =
 \left(
 \frac{1}{N p_i}
 \right)^{\beta},
 \qquad
 \beta \in [0,1]
-$$
+```
 
 where $N$ is the replay-buffer size.
 
-The overall replay process is:
+The replay process can therefore be summarised as:
 
-**Reward prediction → Reward prediction error → Replay priority → Learning update**
+**Reward prediction → Reward prediction error → Replay priority → Prioritised sampling → Learning update**
 
 ---
 
@@ -199,7 +172,7 @@ To enable reward-based prioritisation, RPE-PER introduces an **Enhanced Model Cr
 
 A conventional critic primarily estimates the action value associated with a state-action pair. EMCN extends this architecture by jointly predicting the action value, immediate reward, and next state.
 
-For a state-action pair $(s,a)$, the EMCN outputs:
+For a state-action pair $(s,a)$, the EMCN outputs
 
 ```math
 C_{\theta}(s,a)
@@ -217,37 +190,22 @@ where:
 - $R_{\theta}(s,a)$ predicts the **immediate reward**;
 - $T_{\theta}(s,a)$ predicts the **next state** or its representation.
 
-The reward-prediction component provides the expected reward required to compute RPE.
-
-For transition $i$, the predicted reward
+The reward-prediction component provides the expected reward required to compute RPE. For transition $i$, the predicted reward $R_{\theta}(s_i,a_i)$ is compared with the observed reward $r_i$:
 
 ```math
-R_{\theta}(s_i,a_i)
-```
-
-is compared with the observed reward
-
-```math
-r_i
-```
-
-and the resulting reward prediction error is
-
-```math
-\mathrm{RPE}_i
-=
+\mathrm{RPE}_i =
 \left(
-R_{\theta}(s_i,a_i)-r_i
+R_{\theta}(s_i,a_i) - r_i
 \right)^2
 ```
 
-This reward prediction error is then used to determine the replay priority.
+This RPE value is then used to determine replay priority.
 
-Importantly, **predicted rewards do not replace observed rewards in value learning**. The observed environment reward $r_i$ is still used to construct the value target for TD3 or SAC. Reward prediction serves a separate purpose: identifying experiences that should receive greater attention during replay.
+Importantly, **predicted rewards do not replace observed rewards in value learning**. TD3 and SAC continue to use the actual environment reward $r_i$ when constructing their value targets.
 
-The observed environment reward $r_i$ is still used to construct the value target for TD3 or SAC. Reward prediction serves a separate purpose: identifying experiences that should receive greater attention during replay.
+Reward prediction serves a separate purpose: identifying which stored experiences should receive greater attention during replay.
 
-> **The underlying RL objective determines how the agent learns; RPE-PER determines which experiences are replayed more often.**
+> **The underlying RL algorithm determines how the agent learns; RPE-PER determines which experiences are replayed more often.**
 
 ---
 
@@ -298,40 +256,29 @@ At a high level, the RPE-PER learning process is:
 
 ---
 
-## Why Reward Prediction Error?
+## Why RPE-Based Prioritisation?
 
-Traditional PER uses TD error as a proxy for identifying informative experiences. TD error combines the immediate reward with bootstrapped estimates of future value and therefore depends on the quality and stability of value-function estimation.
+RPE-PER is built around a simple idea: **not all experiences deserve equal replay attention**.
 
-RPE-PER instead focuses directly on the relationship between the predicted and observed reward:
+Compared with conventional TD-error-based prioritisation, RPE provides several useful properties:
 
-**Predicted reward ↔ Observed reward**
-
-This gives RPE-based prioritisation several useful properties:
-
-- **Reward-grounded** — priority is directly related to the difference between predicted and observed task reward.
-- **Interpretable** — a large RPE means that the observed reward was poorly predicted.
-- **Independent of TD error for prioritisation** — replay priority does not rely directly on bootstrapped value discrepancies.
-- **Biologically motivated** — the approach is inspired by the role of reward prediction error in biological learning and memory.
-- **Simple to integrate** — the underlying TD3 and SAC learning objectives remain unchanged.
+- **Reward-grounded** — priority is directly related to the discrepancy between predicted and observed reward.
+- **Interpretable** — a large RPE means that the observed outcome was poorly predicted.
+- **Independent of TD error for prioritisation** — replay priority does not directly rely on bootstrapped value discrepancies.
+- **Biologically motivated** — inspired by the role of reward prediction error in learning and memory.
+- **Simple to integrate** — the underlying TD3 and SAC objectives remain unchanged.
 - **Applicable across actor-critic settings** — evaluated with both deterministic and stochastic off-policy algorithms.
 
 ---
 
 ## Supported Algorithms
 
-RPE-PER is integrated with two off-policy continuous-control algorithms.
+RPE-PER is integrated with two off-policy continuous-control algorithms:
 
-### TD3
+- **TD3** — Twin Delayed Deep Deterministic Policy Gradient
+- **SAC** — Soft Actor-Critic
 
-**Twin Delayed Deep Deterministic Policy Gradient**
-
-RPE-PER changes the replay prioritisation mechanism while retaining the underlying TD3 learning procedure.
-
-### SAC
-
-**Soft Actor-Critic**
-
-RPE-PER is also integrated with SAC to evaluate reward-based prioritisation under a stochastic, entropy-regularised policy.
+This allows RPE-based replay to be evaluated under both deterministic and stochastic policy-learning settings.
 
 ---
 
@@ -348,13 +295,13 @@ RPE-PER is evaluated on six continuous-control environments from the [MuJoCo](ht
 
 The method is compared against several replay strategies:
 
-- **Uniform Replay** — uniform random sampling
+- **Uniform Replay**
 - **PER** — Prioritised Experience Replay
 - **LAP** — Loss-Adjusted Prioritisation
 - **LA3P** — Loss-Adjusted Approximate Actor Prioritised Experience Replay
 - **MaPER** — Model-Augmented Prioritised Experience Replay
 
-Experiments are conducted with both **TD3** and **SAC**, allowing RPE-based prioritisation to be evaluated under deterministic and stochastic policy-learning settings.
+Experiments are conducted with both **TD3** and **SAC** to evaluate RPE-based prioritisation across deterministic and stochastic policy-learning settings.
 
 Across the evaluated tasks, RPE-PER demonstrates strong overall performance with both algorithms, with particularly consistent improvements in the TD3 experiments.
 
@@ -393,16 +340,22 @@ python3 training_loop_SAC.py
 
 > **Replay the experiences that violate the agent's reward expectations.**
 
-Rather than treating every stored transition equally, RPE-PER gives greater replay priority to experiences whose observed rewards differ substantially from what the agent predicted.
+If an outcome is already well predicted, its RPE is small and it receives lower replay priority.
 
-When the outcome is already well predicted, RPE is small.
-
-When the outcome violates expectation, RPE is large.
-
-**Those unexpected experiences are revisited more often during learning.**
+If the observed reward differs substantially from what the agent expected, its RPE is large and the experience is replayed more frequently.
 
 ---
 
+## Paper
+
+**Reward Prediction Error Prioritisation in Experience Replay: The RPE-PER Method**  
+Hoda Yamani, Yuning Xing, Lee Violet C. Ong, Bruce A. MacDonald, and Henry Williams
+
+Presented at the **Australasian Conference on Robotics and Automation (ACRA 2024)**.
+
+**Paper:** [arXiv:2501.18093](https://arxiv.org/abs/2501.18093)
+
+---
 
 ## Citation
 
