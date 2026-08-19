@@ -1,4 +1,3 @@
-
 # Reward Prediction Error Prioritised Experience Replay (RPE-PER)
 
 > **We learn more when reality differs from what we expected.**  
@@ -34,10 +33,10 @@ This discrepancy between **expected** and **received** reward is known as **Rewa
 Conceptually, signed reward prediction error can be written as
 
 $$
-\delta_t^{(r)} = r_t - \hat{r}_t,
+\delta_t^{(r)} = r_t - \hat{r}_t
 $$
 
-where \(r_t\) is the reward actually received and \(\hat{r}_t\) is the expected reward.
+where $r_t$ is the reward actually received and $\hat{r}_t$ is the expected reward.
 
 The three principal cases are:
 
@@ -58,21 +57,21 @@ RPE-PER transfers this idea to reinforcement learning by using reward-prediction
 Off-policy reinforcement-learning agents store past interactions in a replay buffer as transitions
 
 $$
-x_i = (s_i, a_i, r_i, s'_i),
+x_i = (s_i, a_i, r_i, s'_i)
 $$
 
 where:
 
-- \(s_i\) is the current state,
-- \(a_i\) is the selected action,
-- \(r_i\) is the observed reward,
-- \(s'_i\) is the resulting next state.
+- $s_i$ is the current state,
+- $a_i$ is the selected action,
+- $r_i$ is the observed reward,
+- $s'_i$ is the resulting next state.
 
 During training, a replay buffer can accumulate a large number of transitions. However, **not every stored experience is equally informative**.
 
 Standard **Experience Replay** samples transitions uniformly. **Prioritised Experience Replay (PER)** instead increases the probability of replaying transitions with large temporal-difference (TD) errors.
 
-TD error measures a discrepancy between a value estimate and its bootstrapped target. Although useful, it depends on value-function estimation and can be influenced by function approximation, bootstrapping, and changes in the learned policy.
+TD error measures the discrepancy between a value estimate and its bootstrapped target. Although useful, it depends on value-function estimation and can be influenced by function approximation, bootstrapping, and changes in the learned policy.
 
 RPE-PER takes a different perspective.
 
@@ -93,30 +92,29 @@ This provides a direct and interpretable signal of how poorly the reward outcome
 For each stored transition
 
 $$
-x_i = (s_i, a_i, r_i, s'_i),
+x_i = (s_i, a_i, r_i, s'_i)
 $$
 
 the critic predicts the immediate reward associated with the state-action pair:
 
 $$
-\hat{r}_i = R_{\theta}(s_i,a_i),
+\hat{r}_i = R_{\theta}(s_i,a_i)
 $$
 
-where \(R_{\theta}(s_i,a_i)\) is the predicted immediate reward.
+where $R_{\theta}(s_i,a_i)$ is the predicted immediate reward.
 
-RPE-PER then defines the reward prediction error used for prioritisation as
+RPE-PER defines the reward prediction error used for prioritisation as
 
 $$
-\mathrm{RPE}_i
-=
+\mathrm{RPE}_i =
 \left(
-R_{\theta}(s_i,a_i)-r_i
-\right)^2.
+R_{\theta}(s_i,a_i) - r_i
+\right)^2
 $$
 
 This is the **squared discrepancy between predicted and observed reward**.
 
-Unlike the signed biological RPE introduced above, RPE-PER uses the **magnitude of the reward-prediction mismatch** for replay prioritisation. Squaring the error makes the prioritisation signal non-negative and gives greater emphasis to larger discrepancies.
+Unlike the signed biological RPE introduced above, RPE-PER uses the **magnitude of the reward-prediction mismatch** for replay prioritisation. Squaring the discrepancy makes the prioritisation signal non-negative and gives greater emphasis to larger prediction errors.
 
 Therefore:
 
@@ -159,49 +157,39 @@ The principle behind RPE-PER is therefore:
 For each transition, replay priority is defined as
 
 $$
-\sigma_i = \mathrm{RPE}_i + \epsilon,
+\sigma_i = \mathrm{RPE}_i + \epsilon
 $$
 
-where \(\epsilon > 0\) ensures that all transitions retain a non-zero probability of being sampled.
+where $\epsilon > 0$ ensures that all transitions retain a non-zero probability of being sampled.
 
-The probability of sampling transition \(i\) is
+The probability of sampling transition $i$ is
 
 $$
-p_i
-=
-\frac{\sigma_i^\alpha}
-{\sum_j \sigma_j^\alpha},
+p_i =
+\frac{\sigma_i^{\alpha}}
+{\sum_j \sigma_j^{\alpha}}
 $$
 
-where \(\alpha \geq 0\) controls the degree of prioritisation.
+where $\alpha \geq 0$ controls the degree of prioritisation.
 
-When \(\alpha = 0\), all transitions have equal sampling probability. Increasing \(\alpha\) places progressively greater emphasis on transitions with larger RPE values.
+When $\alpha = 0$, all transitions have equal sampling probability. Increasing $\alpha$ places progressively greater emphasis on transitions with larger RPE values.
 
 Because non-uniform sampling changes the training distribution, importance-sampling weights are applied:
 
 $$
-w_i
-=
+w_i =
 \left(
 \frac{1}{N p_i}
-\right)^\beta,
+\right)^{\beta},
 \qquad
-\beta \in [0,1],
+\beta \in [0,1]
 $$
 
-where \(N\) is the replay-buffer size.
+where $N$ is the replay-buffer size.
 
-The overall idea can be summarised as
+The overall replay process is:
 
-$$
-\text{Reward prediction}
-\;\longrightarrow\;
-\text{Reward prediction error}
-\;\longrightarrow\;
-\text{Replay priority}
-\;\longrightarrow\;
-\text{Learning update}.
-$$
+**Reward prediction → Reward prediction error → Replay priority → Learning update**
 
 ---
 
@@ -211,47 +199,55 @@ To enable reward-based prioritisation, RPE-PER introduces an **Enhanced Model Cr
 
 A conventional critic primarily estimates the action value associated with a state-action pair. EMCN extends this architecture by jointly predicting the action value, immediate reward, and next state.
 
-For a state-action pair \((s,a)\),
+For a state-action pair $(s,a)$, the EMCN outputs:
 
-$$
+```math
 C_{\theta}(s,a)
 =
 \left(
 Q_{\theta}(s,a),
 R_{\theta}(s,a),
 T_{\theta}(s,a)
-\right),
-$$
+\right)
+```
 
 where:
 
-- \(Q_{\theta}(s,a)\) estimates the **action value**;
-- \(R_{\theta}(s,a)\) predicts the **immediate reward**;
-- \(T_{\theta}(s,a)\) predicts the **next state** or its representation.
+- $Q_{\theta}(s,a)$ estimates the **action value**;
+- $R_{\theta}(s,a)$ predicts the **immediate reward**;
+- $T_{\theta}(s,a)$ predicts the **next state** or its representation.
 
-The reward-prediction component provides the quantity required to compute RPE:
+The reward-prediction component provides the expected reward required to compute RPE.
 
-$$
+For transition $i$, the predicted reward
+
+```math
 R_{\theta}(s_i,a_i)
-\quad \text{vs.} \quad
-r_i.
-$$
+```
 
-The resulting discrepancy
+is compared with the observed reward
 
-$$
+```math
+r_i
+```
+
+and the resulting reward prediction error is
+
+```math
+\mathrm{RPE}_i
+=
 \left(
 R_{\theta}(s_i,a_i)-r_i
 \right)^2
-$$
+```
 
-is then used to determine the replay priority.
+This reward prediction error is then used to determine the replay priority.
 
-Importantly, **predicted rewards do not replace observed rewards in value learning**.
+Importantly, **predicted rewards do not replace observed rewards in value learning**. The observed environment reward $r_i$ is still used to construct the value target for TD3 or SAC. Reward prediction serves a separate purpose: identifying experiences that should receive greater attention during replay.
 
-The observed environment reward \(r_i\) is still used to construct the value target for TD3 or SAC. Reward prediction serves a separate purpose: identifying experiences that should receive greater attention during replay.
+The observed environment reward $r_i$ is still used to construct the value target for TD3 or SAC. Reward prediction serves a separate purpose: identifying experiences that should receive greater attention during replay.
 
-> **The RL objective determines how the agent learns; RPE determines which experiences it learns from more often.**
+> **The underlying RL objective determines how the agent learns; RPE-PER determines which experiences are replayed more often.**
 
 ---
 
@@ -304,15 +300,11 @@ At a high level, the RPE-PER learning process is:
 
 ## Why Reward Prediction Error?
 
-Traditional PER uses TD error as a proxy for identifying informative experiences. TD error combines the immediate reward with bootstrapped estimates of future value and therefore depends heavily on the quality and stability of value-function estimation.
+Traditional PER uses TD error as a proxy for identifying informative experiences. TD error combines the immediate reward with bootstrapped estimates of future value and therefore depends on the quality and stability of value-function estimation.
 
-RPE-PER isolates a simpler relationship:
+RPE-PER instead focuses directly on the relationship between the predicted and observed reward:
 
-$$
-\text{Predicted reward}
-\quad \longleftrightarrow \quad
-\text{Observed reward}.
-$$
+**Predicted reward ↔ Observed reward**
 
 This gives RPE-based prioritisation several useful properties:
 
@@ -327,7 +319,7 @@ This gives RPE-based prioritisation several useful properties:
 
 ## Supported Algorithms
 
-RPE-PER is integrated with two off-policy continuous-control algorithms:
+RPE-PER is integrated with two off-policy continuous-control algorithms.
 
 ### TD3
 
@@ -399,7 +391,7 @@ python3 training_loop_SAC.py
 
 ## Core Idea
 
-> ### **Replay the experiences that violate the agent's reward expectations.**
+> **Replay the experiences that violate the agent's reward expectations.**
 
 Rather than treating every stored transition equally, RPE-PER gives greater replay priority to experiences whose observed rewards differ substantially from what the agent predicted.
 
@@ -411,20 +403,6 @@ When the outcome violates expectation, RPE is large.
 
 ---
 
-## Paper
-
-This repository accompanies our work:
-
-**Reward Prediction Error Prioritisation in Experience Replay: The RPE-PER Method**  
-Hoda Yamani, Yuning Xing, Lee Violet C. Ong, Bruce A. MacDonald, and Henry Williams
-
-Presented at the **Australasian Conference on Robotics and Automation (ACRA 2024)**.
-
-**Paper:** [arXiv:2501.18093](https://arxiv.org/abs/2501.18093)
-
-The paper investigates **Reward Prediction Error (RPE)** as a biologically motivated signal for prioritising informative experiences in continuous-control reinforcement learning.
-
----
 
 ## Citation
 
@@ -437,4 +415,4 @@ If you use **RPE-PER** or this repository in your research, please cite:
   journal={arXiv preprint arXiv:2501.18093},
   year={2025}
 }
-
+```
