@@ -346,14 +346,16 @@ If the observed reward differs substantially from what the agent expected, its R
 
 ---
 
+
 ## Paper
 
-**Reward Prediction Error Prioritisation in Experience Replay: The RPE-PER Method**  
+**Reward Prediction Error Prioritisation in Experience Replay: The RPE-PER Method**
 Hoda Yamani, Yuning Xing, Lee Violet C. Ong, Bruce A. MacDonald, and Henry Williams
 
-Presented at the **Australasian Conference on Robotics and Automation (ACRA 2024)**.
+Published in the **The Australasian Conference on Robotics and Automation (ACRA 2024)**, Auckland, New Zealand.
 
-**Paper:** [arXiv:2501.18093](https://arxiv.org/abs/2501.18093)
+**Paper:** [ACRA 2024 Proceedings](https://ssl.linklings.net/conferences/acra/acra2024_proceedings/views/includes/files/pap119s2.pdf)
+**arXiv:** [arXiv:2501.18093](https://arxiv.org/abs/2501.18093)
 
 ---
 
@@ -362,10 +364,15 @@ Presented at the **Australasian Conference on Robotics and Automation (ACRA 2024
 If you use **RPE-PER** or this repository in your research, please cite:
 
 ```bibtex
-@article{yamani2025reward,
-  title={Reward prediction error prioritisation in experience replay: The RPE-PER method},
-  author={Yamani, Hoda and Xing, Yuning and Ong, Lee Violet C and MacDonald, Bruce A and Williams, Henry},
-  journal={arXiv preprint arXiv:2501.18093},
-  year={2025}
+@inproceedings{yamani2024reward,
+  title     = {Reward Prediction Error Prioritisation in Experience Replay: The RPE-PER Method},
+  author    = {Yamani, Hoda and Xing, Yuning and Ong, Lee Violet C. and MacDonald, Bruce A. and Williams, Henry},
+  booktitle = {Proceedings of the Australasian Conference on Robotics and Automation (ACRA 2024)},
+  pages     = {154--163},
+  year      = {2024},
+  address   = {Auckland, New Zealand},
+  publisher = {Australian Robotics and Automation Association}
 }
+```
+
 ```
