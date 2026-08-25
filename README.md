@@ -1,12 +1,22 @@
 # Reward Prediction Error Prioritised Experience Replay (RPE-PER)
 
+[![arXiv](https://img.shields.io/badge/arXiv-2501.18093-b31b1b.svg)](https://arxiv.org/abs/2501.18093)
+[![ACRA 2024](https://img.shields.io/badge/ACRA-2024-6A5ACD)](https://www.araa.asn.au/conference/acra-2024/)
+[![Proceedings](https://img.shields.io/badge/ACRA-Proceedings-4B0082)](https://ssl.linklings.net/conferences/acra/acra2024_proceedings/views/includes/files/pap119s2.pdf)
+[![PyTorch](https://img.shields.io/badge/PyTorch-Implementation-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![TD3](https://img.shields.io/badge/Algorithm-TD3-007ACC)](https://arxiv.org/abs/1802.09477)
+[![SAC](https://img.shields.io/badge/Algorithm-SAC-007ACC)](https://arxiv.org/abs/1801.01290)
+[![MuJoCo](https://img.shields.io/badge/Benchmark-MuJoCo-00599C)](https://mujoco.org/)
+[![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+
 > **Unexpected outcomes drive learning. RPE-PER uses this principle to decide which experiences should be replayed more often.**
 
 **Reward Prediction Error Prioritised Experience Replay (RPE-PER)** is a biologically motivated experience replay strategy for off-policy reinforcement learning. It prioritises transitions according to the discrepancy between **predicted and observed rewards**, allowing the agent to revisit experiences whose outcomes are not yet well predicted.
 
-RPE-PER is implemented in **PyTorch**, integrated with **TD3** and **SAC**, and evaluated on continuous-control tasks from the [MuJoCo](https://www.gymlibrary.dev/environments/mujoco/index.html) benchmark suite.
+RPE-PER is implemented in **PyTorch**, integrated with **TD3** and **SAC**, and evaluated on continuous-control tasks from the **MuJoCo** benchmark suite.
 
 **Paper:** [Reward Prediction Error Prioritisation in Experience Replay: The RPE-PER Method](https://arxiv.org/abs/2501.18093)  
+**Proceedings:** [ACRA 2024 Proceedings Paper](https://ssl.linklings.net/conferences/acra/acra2024_proceedings/views/includes/files/pap119s2.pdf)  
 **Presented at:** Australasian Conference on Robotics and Automation (**ACRA 2024**)
 
 ---
